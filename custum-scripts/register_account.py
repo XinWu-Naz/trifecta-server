@@ -10,4 +10,4 @@ role = input("Role(admin or member): ")
 
 data = {'username': username, 'password': sha256_crypt.hash(password), 'role': role, 'my_attendance': []}
 
-db.pengguna.insert_one(data)
+db.user.insert_one(data)

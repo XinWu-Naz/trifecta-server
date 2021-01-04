@@ -32,7 +32,7 @@ datetime.datetime(2020, 11, 28, 19, 52, 7, 986749, tzinfo=datetime.timezone(date
 app = Flask(__name__)
 app.config[
     "MONGO_URI"
-] = "mongodb://localhost:27017/tritek"  # kat sini kita fok you ass broo go dieee
+] = "mongodb://localhost:27017/trifecta"  # kat sini kita fok you ass broo go dieee
 
 # with open('SECRET_SECRET', mode='rb') as f:
 #     SECRET_KEY = f.read()
@@ -62,7 +62,7 @@ def register():
     ):
         register_data = {}
         data["username"] = data["username"].lower().strip()
-        if mongo.db.pengguna.find_one(
+        if mongo.db.user.find_one(
             {"username": data["username"]}
         ):  # username already exist
             return {"status": "fail", "message": "Username already exist!"}, 409
@@ -71,7 +71,7 @@ def register():
         register_data["role"] = data["role"]  # lets gooo, hard coded role
         register_data["my_attendance"] = []
 
-        mongo.db.pengguna.insert_one(register_data)
+        mongo.db.user.insert_one(register_data)
 
         return {
             "status": "success",
@@ -86,10 +86,15 @@ def register():
 def get_members():
     key_api = request.args.get("key_api", "")
     if key_api and helper.return_owner_key_data(mongo, key_api):
-        the_cursor = mongo.db.pengguna.find({})
+        users = list(mongo.db.user.find({}, {"password": 0, "my_attendance": 0}))  # lmao
+        return {"status": "success", "users": users}, 200  # this is expansive my dude, maybe you want to not show all at once?
+    else:
+        return {"status": "fail", "message": "Unauthorized Access"}, 400
 
 
 @app.route("/edit_member")
+def edit_member():
+    pass
 
 
 ############################################ AUTHENTICATION ##############################
@@ -105,7 +110,7 @@ def login():
     username = data["username"].lower()
     password = data["password"]
 
-    data = mongo.db.pengguna.find_one({"username": username})
+    data = mongo.db.user.find_one({"username": username})
     if data and sha256_crypt.verify(password, data["password"]):
         status = True
         key = "".join(
@@ -127,7 +132,7 @@ def login():
 def login_admin():
     data = json.loads(request.data)
     if helper.args_checker(["username", "password"], data):
-        user_data = mongo.db.pengguna.find_one({"username": data["username"]})
+        user_data = mongo.db.user.find_one({"username": data["username"]})
         if user_data and user_data["role"] == "admin":  # if user exist and is admin
             if sha256_crypt.verify(data["password"], user_data["password"]):
                 key = "".join(
@@ -209,7 +214,7 @@ def attend_event():
                 }
             },
         ):
-            mongo.db.pengguna.update_one(
+            mongo.db.user.update_one(
                 {"_id": caller_data["_id"]},
                 {
                     "$push": {
