@@ -32,7 +32,7 @@ datetime.datetime(2020, 11, 28, 19, 52, 7, 986749, tzinfo=datetime.timezone(date
 app = Flask(__name__)
 app.config[
     "MONGO_URI"
-] = "mongodb://localhost:27017/trifecta"  # kat sini kita fok you ass broo go dieee
+] = "mongodb://localhost:27017/trifecta"
 
 # with open('SECRET_SECRET', mode='rb') as f:
 #     SECRET_KEY = f.read()
@@ -68,7 +68,7 @@ def register():
             return {"status": "fail", "message": "Username already exist!"}, 409
         register_data["username"] = data["username"]
         register_data["password"] = sha256_crypt.hash(data["password"])
-        register_data["role"] = data["role"]  # lets gooo, hard coded role
+        register_data["role"] = data["role"]
         register_data["my_attendance"] = []
 
         mongo.db.user.insert_one(register_data)
