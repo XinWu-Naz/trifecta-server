@@ -8,6 +8,7 @@ from passlib.hash import sha256_crypt
 from random import SystemRandom
 from datetime import datetime
 from dateutil import parser
+from pymongo.collection import ReturnDocument
 import json
 import pytz
 
@@ -92,9 +93,24 @@ def get_members():
         return {"status": "fail", "message": "Unauthorized Access"}, 400
 
 
-@app.route("/edit_member")
-def edit_member():
+@app.route("/manage_member", methods=["GET", "POST"])
+def manage_member():
     pass
+
+
+@app.route("/reset_password_admin", methods=["GET"])
+def reset_password():
+    # req_args = ["api_key", "user_id"]
+    key_api = request.args.get("key_api", "")
+    user_id = request.args.get("user_id", "")
+    if key_api and user_id and helper.return_owner_key_data(mongo, key_api)["role"] == 'admin':
+        new_password = "".join(crypto.choices("abcdefghijklmnopqrstuvwxyz0123456789", k=10))
+        userdata = mongo.db.user.find_one_and_update({"_id": ObjectId(user_id)}, {"$set": {"password": sha256_crypt.hash(new_password)}})
+        if userdata:
+            return {"status": "success", "message": "Reseted password for " + userdata["username"], "password": new_password}, 200
+        else: 
+            return {"status": "fail", "message": "Target user not found"}, 404
+    return {"status": "fail", "message": "Unauthorized Access"}, 400
 
 
 ############################################ AUTHENTICATION ##############################
