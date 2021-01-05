@@ -58,7 +58,7 @@ def register():
     data = json.loads(request.data)
     if (
         helper.args_checker(req_args, data)
-        and helper.return_owner_key_data(mongo, data["key_api"], verbose=True)["role"]
+        and helper.return_owner_key_data(mongo, data["key_api"])["role"]
         == "admin"
     ):
         register_data = {}
@@ -183,7 +183,7 @@ def create_event():
     req_args = ["key_api", "event_title", "venue", "datetime", "imageURL"]
     data = json.loads(request.data)
     if helper.args_checker(req_args, data): 
-        caller_data = helper.return_owner_key_data(mongo, data["key_api"], verbose=True)
+        caller_data = helper.return_owner_key_data(mongo, data["key_api"])
         if caller_data["role"] == "admin":
             event = mongo.db.events.insert_one(
                 {
