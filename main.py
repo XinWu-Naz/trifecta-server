@@ -107,7 +107,7 @@ def reset_password():
         new_password = "".join(crypto.choices("abcdefghijklmnopqrstuvwxyz0123456789", k=10))
         userdata = mongo.db.user.find_one_and_update({"_id": ObjectId(user_id)}, {"$set": {"password": sha256_crypt.hash(new_password)}})
         if userdata:
-            return {"status": "success", "message": "Reseted password for " + userdata["username"], "password": new_password}, 200
+            return {"status": "success", "message": "Resetted password for " + userdata["username"], "password": new_password}, 200
         else: 
             return {"status": "fail", "message": "Target user not found"}, 404
     return {"status": "fail", "message": "Unauthorized Access"}, 400
@@ -182,8 +182,8 @@ def create_event():
     req_args = ["key_api", "event_title", "venue", "datetime", "imageURL"]
     data = json.loads(request.data)
     if helper.args_checker(req_args, data): 
-        caller_data = helper.return_owner_key_data(mongo, data["key_api"])
-        if caller_data["role"] == "admin":
+        caller_data = helper.return_owner_key_data(mongo, data["key_api"], verbose=True)
+        if caller_data and  caller_data["role"] == "admin":
             event = mongo.db.events.insert_one(
                 {
                     "owner": caller_data["username"],
@@ -271,10 +271,11 @@ def get_events():
                 .astimezone(pytz.timezone("Asia/Kuala_Lumpur"))
                 .strftime("%b %d, %Y"),
             ]
-        return dumps(
+        return_data =  dumps(
             {"status": "success", "results": the_events},
-            json_options=RELAXED_JSON_OPTIONS,
+            json_options=RELAXED_JSON_OPTIONS
         )  # event mesti tak banyak hehe
+        return return_data
     else:
         return {"status": "fail"}, 401
 
