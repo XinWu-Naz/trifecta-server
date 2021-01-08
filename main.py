@@ -83,8 +83,8 @@ def register():
         return {"status": "fail", "message": "Unauthorized Access"}, 400
 
 
-@app.route("/get_members", methods=["GET"])
-def get_members():
+@app.route("/get_users", methods=["GET"])
+def get_users():
     key_api = request.args.get("key_api", "")
     if key_api and helper.return_owner_key_data(mongo, key_api):
         users = list(mongo.db.user.find({}, {"password": 0, "my_attendance": 0}))  # lmao
@@ -93,9 +93,30 @@ def get_members():
         return {"status": "fail", "message": "Unauthorized Access"}, 400
 
 
-@app.route("/manage_member", methods=["GET", "POST"])
-def manage_member():
-    pass
+@app.route("/manage_user", methods=["GET", "POST"])
+def manage_user():
+    if request.method == "GET":
+        key_api = request.args.get("key_api", "")
+        user_id = request.args.get("user_id", "")
+        if key_api and helper.return_owner_key_data(mongo, key_api)["role"] == "admin":
+            target_user = mongo.db.user.find_one({"_id": ObjectId(user_id)})
+            if target_user:
+                return {"status": "success", "target_user": target_user}
+            else:
+                return {"status": "fail", "message": "Target user does not exist."}, 404
+        else:
+            return {"status": "fail", "message": "Unauthorized Access"}, 400
+    elif request.method == "POST":
+        req_args = ["key_api", "new_userdata"]
+        data = json.loads(request.data)
+        if helper.args_checker(req_args, data) and helper.return_owner_key_data(mongo, data["key_api"])["role"] == "admin":
+            result = mongo.db.user.update_one({"_id": ObjectId(data["new_userdata"]["_id"]["$oid"])}, {"$set": data["new_userdata"]})
+            if result.modified_count != 0:
+                return {"status": "success", "message": "User data was updated!"}
+            else:
+                return {"status": "fail", "message": "You are updating a user that does not exist!"}, 404
+        else:
+            return {"status": "fail", "message": "Unauthorized access!"}, 400
 
 
 @app.route("/reset_password_admin", methods=["GET"])
