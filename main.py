@@ -119,7 +119,7 @@ def manage_user():
             return {"status": "fail", "message": "Unauthorized access!"}, 400
 
 
-@app.route("/reset_password_admin", methods=["GET"])
+@app.route("/reset_password_user", methods=["GET"])
 def reset_password():
     # req_args = ["api_key", "user_id"]
     key_api = request.args.get("key_api", "")
