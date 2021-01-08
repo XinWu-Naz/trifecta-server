@@ -3,7 +3,7 @@ from flask_pymongo import PyMongo
 import pymongo
 
 from bson.objectid import ObjectId
-from bson.json_util import dumps, RELAXED_JSON_OPTIONS
+from bson.json_util import loads, dumps, RELAXED_JSON_OPTIONS
 from passlib.hash import sha256_crypt
 from random import SystemRandom
 from datetime import datetime
@@ -101,16 +101,16 @@ def manage_user():
         if key_api and helper.return_owner_key_data(mongo, key_api)["role"] == "admin":
             target_user = mongo.db.user.find_one({"_id": ObjectId(user_id)})
             if target_user:
-                return {"status": "success", "target_user": target_user}
+                return dumps({"status": "success", "target_user": target_user}, json_options=RELAXED_JSON_OPTIONS)
             else:
                 return {"status": "fail", "message": "Target user does not exist."}, 404
         else:
             return {"status": "fail", "message": "Unauthorized Access"}, 400
     elif request.method == "POST":
         req_args = ["key_api", "new_userdata"]
-        data = json.loads(request.data)
+        data = loads(request.data)
         if helper.args_checker(req_args, data) and helper.return_owner_key_data(mongo, data["key_api"])["role"] == "admin":
-            result = mongo.db.user.update_one({"_id": ObjectId(data["new_userdata"]["_id"]["$oid"])}, {"$set": data["new_userdata"]})
+            result = mongo.db.user.update_one({"_id": data["_id"]}, {"$set": data["new_userdata"]})
             if result.modified_count != 0:
                 return {"status": "success", "message": "User data was updated!"}
             else:
