@@ -1,6 +1,6 @@
 from pymongo import MongoClient
 client = MongoClient('localhost', 27017)
-db = client.tritek
+db = client.trifecta
 from passlib.hash import sha256_crypt
 
 username = input("Username: ")

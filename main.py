@@ -125,7 +125,6 @@ def login():
         return {"status": "critical failure", "message": "missing required args"}
     username = data["username"].lower()
     password = data["password"]
-
     data = mongo.db.user.find_one({"username": username})
     if data and sha256_crypt.verify(password, data["password"]):
         status = True
