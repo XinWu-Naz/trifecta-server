@@ -9,7 +9,7 @@ def args_checker(args, datajson):
 
 def return_owner_key_data(mongo, key_api, verbose=False, extra_verbose=False):
     key_document = mongo.db.key_api.find_one({'key': key_api})
-    if key_document["username"]:
+    if key_document:
         if extra_verbose:
             caller_data = mongo.db.user.find_one({"username": key_document["username"]})
         elif verbose:
