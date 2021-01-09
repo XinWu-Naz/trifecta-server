@@ -64,7 +64,7 @@ def register():
         register_data = {}
         data["username"] = data["username"].lower().strip()
         if mongo.db.user.find_one(
-            {"username": data["username"]}
+            {"username": data["username"]}, {}
         ):  # username already exist
             return {"status": "fail", "message": "Username already exist!"}, 409
         register_data["username"] = data["username"]
@@ -88,7 +88,7 @@ def get_users():
     key_api = request.args.get("key_api", "")
     if key_api and helper.return_owner_key_data(mongo, key_api):
         users = list(mongo.db.user.find({}, {"password": 0, "my_attendance": 0}))  # lmao
-        return {"status": "success", "users": users}, 200  # this is expansive my dude, maybe you want to not show all at once?
+        return dumps({"status": "success", "users": users}), 200  # this is expansive my dude, maybe you want to not show all at once?
     else:
         return {"status": "fail", "message": "Unauthorized Access"}, 400
 
@@ -109,12 +109,13 @@ def manage_user():
     elif request.method == "POST":
         req_args = ["key_api", "new_userdata"]
         data = loads(request.data)
+        data["new_userdata"] = loads(data["new_userdata"])
         if helper.args_checker(req_args, data) and helper.return_owner_key_data(mongo, data["key_api"])["role"] == "admin":
             result = mongo.db.user.update_one({"_id": data["_id"]}, {"$set": data["new_userdata"]})
             if result.modified_count != 0:
                 return {"status": "success", "message": "User data was updated!"}
             else:
-                return {"status": "fail", "message": "You are updating a user that does not exist!"}, 404
+                return {"status": "fail", "message": "You are updating a user that does not exist or you are not updating anything"}, 404
         else:
             return {"status": "fail", "message": "Unauthorized access!"}, 400
 
