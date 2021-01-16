@@ -236,8 +236,9 @@ def attend_event():
         the_event = mongo.db.events.find_one_or_404(
             {"_id": ObjectId(data["event_id"])}, {"owner": 0, "venue": 0, "datetime": 0}
         )
-        if caller_data["username"] in the_event["attendees"]:
-            return {"status": "fail", "message": "Already attended."}, 409
+        for attendee in the_event["attendees"]:
+            if attendee["username"] == caller_data["username"]:
+                return {"status": "fail", "message": "Already attended."}, 409
         now = datetime.now(pytz.utc)
         if mongo.db.events.find_one_and_update(
             {"_id": ObjectId(data["event_id"])},
