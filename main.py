@@ -201,7 +201,7 @@ def logout():
 ################################## EVENT ####################################################
 @app.route("/create_event", methods=["PUT"])
 def create_event():
-    req_args = ["key_api", "event_title", "venue", "datetime", "imageURL"]
+    req_args = ["key_api", "event_title", "venue", "datetime", "imageURL", "description"]
     data = json.loads(request.data)
     if helper.args_checker(req_args, data): 
         caller_data = helper.return_owner_key_data(mongo, data["key_api"], verbose=True)
@@ -210,6 +210,7 @@ def create_event():
                 {
                     "owner": caller_data["username"],
                     "title": data["event_title"],
+                    "description": data["description"],
                     "venue": data["venue"],
                     "imageURL": data["imageURL"],
                     "datetime": pytz.timezone("Asia/Kuala_Lumpur").localize(
@@ -305,7 +306,7 @@ def get_events():
 
 @app.route("/edit_event", methods=["PATCH"])
 def edit_event():
-    req_args = ["key_api", "id", "title", "venue", "datetime", "imageURL"]
+    req_args = ["key_api", "id", "title", "venue", "datetime", "imageURL", "description"]
     data = json.loads(request.data)
     caller_data = helper.return_owner_key_data(mongo, data["key_api"])
     if helper.args_checker(req_args, data) and caller_data["role"] == "admin":
@@ -314,6 +315,7 @@ def edit_event():
             {
                 "$set": {
                     "title": data["title"],
+                    "description": data["description"],
                     "venue": data["venue"],
                     "imageURL": data["imageURL"],
                     "datetime": pytz.timezone("Asia_Kuala_Lumpur").localize(
