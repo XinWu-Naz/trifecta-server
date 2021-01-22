@@ -129,6 +129,7 @@ def reset_password():
         new_password = "".join(crypto.choices("abcdefghijklmnopqrstuvwxyz0123456789", k=10))
         userdata = mongo.db.user.find_one_and_update({"_id": ObjectId(user_id)}, {"$set": {"password": sha256_crypt.hash(new_password)}})
         if userdata:
+            mongo.db.key_api.delete_many({"username": userdata["username"]})
             return {"status": "success", "message": "Resetted password for " + userdata["username"], "password": new_password}, 200
         else: 
             return {"status": "fail", "message": "Target user not found"}, 404
