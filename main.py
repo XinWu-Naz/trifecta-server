@@ -285,7 +285,7 @@ def get_events():
     if key_api and helper.return_owner_key_data(mongo, key_api):
         the_cursor = mongo.db.events.find(
             {}, {"attendees": 0}
-        )  # .sort('datetime', pymongo.DESCENDING)
+        ).sort('datetime', pymongo.DESCENDING)
         the_events = list(the_cursor)
         for event in the_events:
             event["datetime"] = [
