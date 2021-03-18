@@ -40,7 +40,6 @@ app.config[
 
 # app.secret_key = SECRET_KEY
 crypto = SystemRandom()
-mongo = PyMongo(app)
 
 # my_printer = pprint.PrettyPrinter(depth=2)
 success = "success"
@@ -54,6 +53,7 @@ def main():
 ############################## Account ############################
 @app.route("/register", methods=["POST"])
 def register():
+    mongo = PyMongo(app)
     req_args = ["key_api", "username", "password", "role"]
     data = json.loads(request.data)
     if (
@@ -85,6 +85,7 @@ def register():
 
 @app.route("/get_users", methods=["GET"])
 def get_users():
+    mongo = PyMongo(app)
     key_api = request.args.get("key_api", "")
     if key_api and helper.return_owner_key_data(mongo, key_api):
         users = list(mongo.db.user.find({}, {"password": 0, "my_attendance": 0}))  # lmao
@@ -95,6 +96,7 @@ def get_users():
 
 @app.route("/manage_user", methods=["GET", "POST"])
 def manage_user():
+    mongo = PyMongo(app)
     if request.method == "GET":
         key_api = request.args.get("key_api", "")
         user_id = request.args.get("user_id", "")
@@ -122,6 +124,7 @@ def manage_user():
 
 @app.route("/reset_password_user", methods=["GET"])
 def reset_password():
+    mongo = PyMongo(app)
     # req_args = ["api_key", "user_id"]
     key_api = request.args.get("key_api", "")
     user_id = request.args.get("user_id", "")
@@ -139,6 +142,7 @@ def reset_password():
 ############################################ AUTHENTICATION ##############################
 @app.route("/login", methods=["POST"])
 def login():
+    mongo = PyMongo(app)
     # my_printer.pprint(request.get_json())
     # print(request.get_json())
     # print(request.data)
@@ -168,6 +172,7 @@ def login():
 
 @app.route("/login_admin", methods=["POST"])
 def login_admin():
+    mongo = PyMongo(app)
     data = json.loads(request.data)
     if helper.args_checker(["username", "password"], data):
         user_data = mongo.db.user.find_one({"username": data["username"]})
@@ -191,6 +196,7 @@ def login_admin():
 
 @app.route("/logout", methods=["DELETE"])  # tengok args lul
 def logout():
+    mongo = PyMongo(app)
     key_api = request.args.get("key_api", "")
     if key_api:
         mongo.db.key_api.delete_one({"key": key_api})
@@ -202,6 +208,7 @@ def logout():
 ################################## EVENT ####################################################
 @app.route("/create_event", methods=["PUT"])
 def create_event():
+    mongo = PyMongo(app)
     req_args = ["key_api", "event_title", "venue", "datetime", "imageURL", "description"]
     data = json.loads(request.data)
     if helper.args_checker(req_args, data): 
@@ -229,6 +236,7 @@ def create_event():
 
 @app.route("/attend_event", methods=["POST"])
 def attend_event():
+    mongo = PyMongo(app)
     req_args = ["key_api", "event_id"]
     data = json.loads(request.data)
     caller_data = helper.return_owner_key_data(mongo, data["key_api"], verbose=True)
@@ -280,6 +288,7 @@ def attend_event():
 
 @app.route("/get_events")
 def get_events():
+    mongo = PyMongo(app)
     # req_args = ['key_api']
     key_api = request.args.get("key_api", "")
     if key_api and helper.return_owner_key_data(mongo, key_api):
@@ -307,6 +316,7 @@ def get_events():
 
 @app.route("/edit_event", methods=["PATCH"])
 def edit_event():
+    mongo = PyMongo(app)
     req_args = ["key_api", "id", "title", "venue", "datetime", "imageURL", "description"]
     data = json.loads(request.data)
     caller_data = helper.return_owner_key_data(mongo, data["key_api"])
@@ -331,6 +341,7 @@ def edit_event():
 
 @app.route("/remove_event", methods=["DELETE"])
 def remove_event():
+    mongo = PyMongo(app)
     req_args = ["key_api", "event_id"]
     data = request.args.to_dict()
     caller_data = helper.return_owner_key_data(mongo, data["key_api"])
@@ -346,6 +357,7 @@ def remove_event():
 ################################# Miscellaneous ####################################
 @app.route("/init_db")
 def init_db():
+    mongo = PyMongo(app)
     if not mongo.db.user.estimated_document_count():
         mongo.db.user.insert_one(
             {
@@ -356,11 +368,12 @@ def init_db():
             }
         )
         return "created the user admin"
-    return "admin already existed!", 400
+    return "admin already existed! yo", 400
 
 
 @app.route("/who_am_i", methods=["GET"])
 def who_am_i():
+    mongo = PyMongo(app)
     key_api = request.args.get("key_api", "")
     caller_data = helper.return_owner_key_data(mongo, key_api, extra_verbose=True)
     for the_datetime in caller_data["my_attendance"]:
