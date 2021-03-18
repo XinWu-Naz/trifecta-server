@@ -3,7 +3,7 @@ services:
   web:
     build: .
     ports:
-      - "81:6969"
+      - "1337:6969"
     links:
       - db
   db:
@@ -11,6 +11,3 @@ services:
     hostname: the_mongodb
     volumes: 
       - ./mongo/data:/data/db
-    ports:
-      - 27016:27017
- 
