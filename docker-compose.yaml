@@ -1,0 +1,15 @@
+services:
+  web:
+    build: .
+    ports:
+      - "81:6969"
+    links:
+      - db
+  db:
+    image: mongo
+    hostname: the_mongodb
+    volumes: 
+      - ./mongo/data:/data/db
+    ports:
+      - 27016:27017
+ 
