@@ -33,7 +33,7 @@ datetime.datetime(2020, 11, 28, 19, 52, 7, 986749, tzinfo=datetime.timezone(date
 app = Flask(__name__)
 app.config[
     "MONGO_URI"
-] = "mongodb://localhost:27017/trifecta"
+] = "mongodb://the_mongodb:27017/trifecta"
 
 # with open('SECRET_SECRET', mode='rb') as f:
 #     SECRET_KEY = f.read()
@@ -344,6 +344,21 @@ def remove_event():
 
 
 ################################# Miscellaneous ####################################
+@app.route("/init_db")
+def init_db():
+    if not mongo.db.user.estimated_document_count():
+        mongo.db.user.insert_one(
+            {
+                "username": "admin",
+                "password": sha256_crypt.hash("admin"),
+                "role": "admin",
+                "my_attendance": []
+            }
+        )
+        return "created the user admin"
+    return "admin already existed!", 400
+
+
 @app.route("/who_am_i", methods=["GET"])
 def who_am_i():
     key_api = request.args.get("key_api", "")
