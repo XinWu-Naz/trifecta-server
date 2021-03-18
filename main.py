@@ -355,6 +355,18 @@ def remove_event():
 
 
 ################################# Miscellaneous ####################################
+@app.route("/is_mongo_up")
+def is_mongo_up():
+    try:
+        mongo = PyMongo(app, serverSelectionTimeoutMS=5000)
+        mongo.cx.server_info()
+        return {"message": "mongo is up!"}
+    except pymongo.errors.ServerSelectionTimeoutError as err:
+        print(err)
+        return {"message": str(err)}, 500
+
+
+
 @app.route("/init_db")
 def init_db():
     mongo = PyMongo(app)
