@@ -387,6 +387,8 @@ def init_db():
 def who_am_i():
     mongo = PyMongo(app)
     key_api = request.args.get("key_api", "")
+    if not key_api:
+        return {"message": "Login first!"},  401
     caller_data = helper.return_owner_key_data(mongo, key_api, extra_verbose=True)
     for the_datetime in caller_data["my_attendance"]:
         the_datetime["attendance_time"] = (
